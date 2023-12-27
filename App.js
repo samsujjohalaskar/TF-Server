@@ -23,7 +23,7 @@ app.use(require('./routes/router'));
 //     next();
 // }
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 6010;
 
 // const User = require('./models/userModel');
 
