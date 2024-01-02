@@ -100,6 +100,7 @@ router.post("/owner-login", async (req, res) => {
         expires: new Date(Date.now() + 36000000),
         httpOnly: true,
         secure: true, // Set to true in production (for HTTPS)
+        sameSite: "none"
       });
 
       if (!isMatch) {
