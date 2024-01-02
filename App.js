@@ -10,7 +10,13 @@ require('./database/connection');
 
 const app = express();
 // Enable All CORS Requests
-app.use(cors());
+app.use(cors({
+    origin: 'https://tasteandflavor.vercel.app',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Origin', 'X-Requested-With', 'Accept', 'x-client-key', 'x-client-token', 'x-client-secret', 'Authorization'],
+    credentials: true,
+    exposedHeaders: ['set-cookie'], // Expose the 'set-cookie' header to the frontend
+}));
 
 app.use(cookieParser())
 

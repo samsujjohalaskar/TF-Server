@@ -18,11 +18,11 @@ const authMiddleware = async (req,res,next) =>{
             
             next();
         }else{
-            res.status(401).send("Unauthorized: Invalid Tokenn.");
+            res.status(401).send({message : "Unauthorized: Invalid Token."});
         }
 
     } catch (error) {
-        res.status(401).send("Unauthorized: Invalid Token.");
+        res.status(401).send({message : "Unauthorized: Invalid Token."});
         console.log(error);
     }
 };
