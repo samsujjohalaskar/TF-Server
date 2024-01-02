@@ -99,7 +99,7 @@ router.post("/owner-login", async (req, res) => {
       res.cookie("jwtoken", token, {
         expires: new Date(Date.now() + 36000000),
         httpOnly: true,
-        secure: false, // Set to true in production (for HTTPS)
+        secure: true, // Set to true in production (for HTTPS)
         sameSite: "none"
       });
 
