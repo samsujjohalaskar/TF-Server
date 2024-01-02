@@ -150,7 +150,10 @@ router.get("/owner-home", authMiddleware, (req, res) => {
 });
 
 router.get("/owner-logout", (req, res) => {
-  res.clearCookie("jwtoken");
+  res.clearCookie("jwtoken", token, {
+    secure: true, // Set to true in production (for HTTPS)
+    sameSite: "none"
+  });
   res.status(200).send("Logged Out Successfully.");
 });
 
