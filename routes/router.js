@@ -149,7 +149,7 @@ router.get("/owner-home", authMiddleware, (req, res) => {
   res.send(req.user);
 });
 
-router.get("/owner-logout", (req, res) => {
+router.get("/owner-logout", authMiddleware, (req, res) => {
   res.clearCookie("jwtoken");
   res.status(200).send("Logged Out Successfully.");
 });
