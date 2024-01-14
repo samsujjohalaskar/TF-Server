@@ -100,7 +100,7 @@ router.post("/owner-login", async (req, res) => {
         expires: new Date(Date.now() + 36000000),
         httpOnly: true,
         secure: true, // Set to true in production (for HTTPS)
-        sameSite: "none"
+        sameSite: "none",
       });
 
       if (!isMatch) {
@@ -362,7 +362,7 @@ router.delete(
 router.get("/restaurants-slider", async (req, res) => {
   try {
     const restaurants = await Restaurant.find()
-      .limit(50)
+      .limit(200)
       .select(
         "_id name city area location averageCostForTwo cuisine startTime endTime contactNumber website extraDiscount types offers amenities images menu"
       );
@@ -597,8 +597,15 @@ router.patch("/reservations/:bookingId", async (req, res) => {
 
 router.post("/add-review", async (req, res) => {
   try {
-    const { userEmail, fullName, rating, comment, liked, disLiked, canBeImproved } =
-      req.body;
+    const {
+      userEmail,
+      fullName,
+      rating,
+      comment,
+      liked,
+      disLiked,
+      canBeImproved,
+    } = req.body;
 
     if (!userEmail || !rating) {
       res.status(402).json({ error: "Attributes Missing." });
@@ -697,8 +704,8 @@ router.post("/add-user", async (req, res) => {
         });
         await user.save();
         res.status(200).json({ message: "User Created." });
-      }else{
-        res.status(202).json({message: "User exist."})
+      } else {
+        res.status(202).json({ message: "User exist." });
       }
     }
   } catch (error) {
