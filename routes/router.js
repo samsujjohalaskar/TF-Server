@@ -362,7 +362,7 @@ router.delete(
 router.get("/restaurants-slider", async (req, res) => {
   try {
     const restaurants = await Restaurant.find()
-      .limit(200)
+      .limit(300)
       .select(
         "_id name city area location averageCostForTwo cuisine startTime endTime contactNumber website extraDiscount types offers amenities images menu"
       );

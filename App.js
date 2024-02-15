@@ -11,8 +11,8 @@ require('./database/connection');
 const app = express();
 // Enable All CORS Requests
 app.use(cors({
-    // origin: 'https://tasteandflavor.vercel.app',
-    origin: '*',
+    origin: 'https://tasteandflavor.vercel.app',
+    // origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Origin', 'X-Requested-With', 'Accept', 'x-client-key', 'x-client-token', 'x-client-secret', 'Authorization'],
     credentials: true,
