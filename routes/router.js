@@ -13,6 +13,9 @@ const Restaurant = require("../models/restaurantModel");
 const Booking = require("../models/bookingModel");
 const Review = require("../models/reviewModel");
 const Owner = require("../models/restaurantOwnerModel");
+const Blog = require("../models/blogModel");
+const Comment = require("../models/commentModel");
+const Like = require("../models/likeModel");
 
 const storage = multer.memoryStorage();
 const upload = multer({
@@ -361,7 +364,7 @@ router.delete(
 
 router.get("/restaurants-slider", async (req, res) => {
   try {
-    const {city} = req.query;
+    const { city } = req.query;
     const restaurants = await Restaurant.find({ city: city })
       .limit(15)
       .select(
@@ -736,14 +739,24 @@ router.get("/user-info", async (req, res) => {
 
 router.get("/user-image", async (req, res) => {
   try {
-    const { userEmail } = req.query;
+    let user;
+    const { userEmail, userId } = req.query;
 
-    const user = await User.findOne({ userEmail: userEmail }).select(
-      "-phoneNumber -bookings -creationTime -lastSignInTime -reviews -userEmail -_id"
-    );
-    res.status(200).json({ user });
+    if (userEmail) {
+      user = await User.findOne({ userEmail }).select("image");
+    } else if (userId) {
+      user = await User.findById(userId).select("image");
+    } else {
+      return res.status(400).json({ error: "Missing query parameters" });
+    }
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({ image: user.image });
   } catch (error) {
-    console.error("Error fetching restaurants:", error);
+    console.error("Error fetching user image:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
@@ -763,6 +776,47 @@ router.post("/upload-image", upload.single("image"), async (req, res) => {
   } catch (error) {
     console.error("Error uploading image:", error);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.post("/post-blog", upload.single("image"), async (req, res) => {
+  try {
+    const { title, content, category, postedBy } = req.body;
+    const user = await User.findOne({ _id:postedBy });
+
+    const newBlog = new Blog({
+      title,
+      content,
+      category,
+      postedBy,
+    });
+
+    newBlog.image.data = req.file.buffer;
+    newBlog.image.contentType = req.file.mimetype;
+
+    await newBlog.save();
+
+    user.blogs.push(newBlog);
+    await user.save();
+
+    res.status(201).json({ message: "Blog post created successfully" });
+  } catch (error) {
+    console.error("Error creating blog post:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+router.get("/blogs", async (req, res) => {
+  try {
+    const blogs = await Blog.find().populate("postedBy", "fullName");
+
+    if (blogs.length === 0) {
+      return res.status(404).json({ message: "No blogs found" });
+    }
+    res.status(200).json(blogs);
+  } catch (error) {
+    console.error("Error fetching blogs:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 

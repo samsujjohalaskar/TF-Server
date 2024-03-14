@@ -27,6 +27,21 @@ const userSchema = new mongoose.Schema({
       _id: { type: mongoose.Schema.Types.ObjectId, ref: "Review" },
     },
   ],
+  blogs: [
+    {
+      _id: { type: mongoose.Schema.Types.ObjectId, ref: "Blog" },
+    },
+  ],
+  likes: [
+    {
+      _id: { type: mongoose.Schema.Types.ObjectId, ref: "Like" },
+    },
+  ],
+  comments: [
+    {
+      _id: { type: mongoose.Schema.Types.ObjectId, ref: "Comment" },
+    },
+  ],
   creationTime: {
     type: String,
   },
