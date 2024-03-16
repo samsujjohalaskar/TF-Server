@@ -842,4 +842,25 @@ router.get("/blog", async (req, res) => {
   }
 });
 
+router.get("/similar-blog", async (req, res) => {
+  try {
+    const { blogCategory } = req.query;
+
+    // Validate if blogCategory is provided
+    if (!blogCategory) {
+      return res.status(400).json({ error: "Blog category not provided." });
+    }
+
+    // Fetch blog details based on blogCategory
+    const blogs = await Blog.find({ category: blogCategory }).select(
+      "title date"
+    );
+
+    res.status(200).json(blogs);
+  } catch (error) {
+    console.error("Error fetching blog details:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 module.exports = router;
