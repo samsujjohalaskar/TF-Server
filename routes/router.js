@@ -782,7 +782,7 @@ router.post("/upload-image", upload.single("image"), async (req, res) => {
 router.post("/post-blog", upload.single("image"), async (req, res) => {
   try {
     const { title, content, category, postedBy } = req.body;
-    const user = await User.findOne({ _id:postedBy });
+    const user = await User.findOne({ _id: postedBy });
 
     const newBlog = new Blog({
       title,
@@ -817,6 +817,28 @@ router.get("/blogs", async (req, res) => {
   } catch (error) {
     console.error("Error fetching blogs:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+router.get("/blog", async (req, res) => {
+  try {
+    const { blogID } = req.query;
+
+    // Validate if blog blogID is provided
+    if (!blogID) {
+      return res.status(400).json({ error: "Blog not Found." });
+    }
+
+    // Fetch blog details based on blogID
+    const blog = await Blog.findById(blogID).populate({
+      path: "postedBy",
+      select: "fullName image",
+    });
+
+    res.status(200).json(blog);
+  } catch (error) {
+    console.error("Error fetching Blog details:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
