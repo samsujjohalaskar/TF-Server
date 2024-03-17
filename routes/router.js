@@ -808,7 +808,10 @@ router.post("/post-blog", upload.single("image"), async (req, res) => {
 
 router.get("/blogs", async (req, res) => {
   try {
-    const blogs = await Blog.find().populate("postedBy", "fullName");
+    const blogs = await Blog.find().populate({
+      path: "postedBy",
+      select: "fullName image",
+    });
 
     if (blogs.length === 0) {
       return res.status(404).json({ message: "No blogs found" });
