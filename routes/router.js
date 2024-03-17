@@ -820,9 +820,9 @@ router.get("/blogs", async (req, res) => {
   }
 });
 
-router.get("/blog/individual-blogs/:blogID", async (req, res) => {
+router.get("/blog/individual-blogs", async (req, res) => {
   try {
-    const { blogID } = req.params;
+    const { blogID } = req.query;
 
     // Validate if blog blogID is provided
     if (!blogID) {
