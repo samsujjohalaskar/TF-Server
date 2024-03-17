@@ -863,4 +863,61 @@ router.get("/similar-blog", async (req, res) => {
   }
 });
 
+router.post("/like-blog", async (req, res) => {
+  try {
+    const { blogID, userID } = req.body;
+    const user = await User.findById(userID);
+    const blog = await Blog.findById(blogID);
+
+    const existingLike = await Like.findOne({
+      blog: blogID,
+      likedBy: userID,
+    });
+    if (existingLike) {
+      return res.status(400).json({ message: "Blog already liked" });
+    }
+
+    const like = new Like({ blog: blogID, likedBy: userID });
+    await like.save();
+
+    user.likes.push(like);
+    await user.save();
+
+    blog.likes.push(like);
+    await blog.save();
+
+    res.status(201).json({ message: "Blog liked successfully" });
+  } catch (error) {
+    console.error("Error liking blog:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+router.post("/unlike-blog", async (req, res) => {
+  try {
+    const { blogID, userID } = req.body;
+    const user = await User.findById(userID);
+    const blog = await Blog.findById(blogID);
+
+    const existingLike = await Like.findOneAndDelete({
+      blog: blogID,
+      likedBy: userID,
+    });
+    if (!existingLike) {
+      return res.status(400).json({ message: "Blog not liked by user" });
+    }
+
+    blog.likes.pull(existingLike);
+    await blog.save();
+
+    user.likes.pull(existingLike);
+    await user.save();
+
+    res.status(200).json({ message: "Blog unliked successfully" });
+  } catch (error) {
+    console.error("Error unliking blog:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 module.exports = router;
