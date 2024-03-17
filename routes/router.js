@@ -853,7 +853,7 @@ router.get("/similar-blog", async (req, res) => {
 
     // Fetch blog details based on blogCategory
     const blogs = await Blog.find({ category: blogCategory }).select(
-      "title date"
+      "_id title date"
     );
 
     res.status(200).json(blogs);
