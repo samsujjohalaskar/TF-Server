@@ -816,6 +816,10 @@ router.get("/blogs", async (req, res) => {
     if (blogs.length === 0) {
       return res.status(404).json({ message: "No blogs found" });
     }
+    res.header(
+      "Access-Control-Allow-Origin",
+      "https://tasteandflavor.vercel.app"
+    );
     res.status(200).json(blogs);
   } catch (error) {
     console.error("Error fetching blogs:", error);
@@ -837,7 +841,10 @@ router.get("/blog/individual-blogs", async (req, res) => {
       path: "postedBy",
       select: "fullName image",
     });
-
+    res.header(
+      "Access-Control-Allow-Origin",
+      "https://tasteandflavor.vercel.app"
+    );
     res.status(200).json(blog);
   } catch (error) {
     console.error("Error fetching Blog details:", error);
@@ -858,7 +865,10 @@ router.get("/similar-blog", async (req, res) => {
     const blogs = await Blog.find({ category: blogCategory }).select(
       "_id title date"
     );
-
+    res.header(
+      "Access-Control-Allow-Origin",
+      "https://tasteandflavor.vercel.app"
+    );
     res.status(200).json(blogs);
   } catch (error) {
     console.error("Error fetching blog details:", error);
