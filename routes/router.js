@@ -923,4 +923,40 @@ router.post("/unlike-blog", async (req, res) => {
   }
 });
 
+router.post("/post-comment", async (req, res) => {
+  try {
+    const { blogID, comment, userID } = req.body;
+    const user = await User.findById(userID);
+    const blog = await Blog.findById(blogID);
+
+    const existingComment = await Comment.findOne({
+      blog: blogID,
+      commentedBy: userID,
+    });
+
+    if (existingComment) {
+      existingComment.comment = comment;
+      await existingComment.save();
+      res.status(200).json({ message: "Comment updated successfully" });
+    } else {
+      const newComment = new Comment({
+        comment,
+        blog: blogID,
+        commentedBy: userID,
+      });
+      await newComment.save();
+
+      user.comments.push(newComment);
+      await user.save();
+
+      blog.comments.push(newComment);
+      await blog.save();
+      res.status(201).json({ message: "Comment posted successfully" });
+    }
+  } catch (error) {
+    console.error("Error posting/commenting:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 module.exports = router;
