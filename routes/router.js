@@ -825,20 +825,30 @@ router.get("/blogs", async (req, res) => {
 
 router.get("/blog/individual-blogs", async (req, res) => {
   try {
-    const { blogID } = req.query;
+    const { blogID, blogCat } = req.query;
 
-    // Validate if blog blogID is provided
-    if (!blogID) {
-      return res.status(400).json({ error: "Blog not Found." });
+    // Validate if blogID or blogCat is provided
+    if (!blogID && !blogCat) {
+      return res
+        .status(400)
+        .json({ error: "Blog ID or Category not provided." });
     }
 
-    // Fetch blog details based on blogID
-    const blog = await Blog.findById(blogID).populate({
-      path: "postedBy",
-      select: "fullName image",
-    });
+    // Fetch blog details based on blogID or blogCat
+    let blogs;
+    if (blogID) {
+      blogs = await Blog.findById(blogID).populate({
+        path: "postedBy",
+        select: "fullName image",
+      });
+    } else {
+      blogs = await Blog.find({ category: blogCat }).populate({
+        path: "postedBy",
+        select: "fullName image",
+      });
+    }
 
-    res.status(200).json(blog);
+    res.status(200).json(blogs);
   } catch (error) {
     console.error("Error fetching Blog details:", error);
     res.status(500).json({ error: "Internal Server Error" });
