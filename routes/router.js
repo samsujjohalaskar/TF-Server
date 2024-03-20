@@ -806,7 +806,7 @@ router.post("/post-blog", upload.single("image"), async (req, res) => {
   }
 });
 
-router.get("/blogs", async (req, res) => {
+router.get("/blogs/all-available/fetch-all", async (req, res) => {
   try {
     const blogs = await Blog.find().populate({
       path: "postedBy",
