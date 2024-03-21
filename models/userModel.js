@@ -29,17 +29,20 @@ const userSchema = new mongoose.Schema({
   ],
   blogs: [
     {
-      _id: { type: mongoose.Schema.Types.ObjectId, ref: "Blog" },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Blog",
     },
   ],
   likes: [
     {
-      _id: { type: mongoose.Schema.Types.ObjectId, ref: "Like" },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Like",
     },
   ],
   comments: [
     {
-      _id: { type: mongoose.Schema.Types.ObjectId, ref: "Comment" },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Comment",
     },
   ],
   creationTime: {
