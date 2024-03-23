@@ -837,10 +837,18 @@ router.get("/blog/individual-blogs", async (req, res) => {
     // Fetch blog details based on blogID or blogCat
     let blogs;
     if (blogID) {
-      blogs = await Blog.findById(blogID).populate({
-        path: "postedBy",
-        select: "fullName image",
-      });
+      blogs = await Blog.findById(blogID)
+        .populate({
+          path: "postedBy",
+          select: "fullName image",
+        })
+        .populate({
+          path: "comments",
+          populate: {
+            path: "commentedBy",
+            select: "fullName image",
+          },
+        });
     } else {
       blogs = await Blog.find({ category: blogCat }).populate({
         path: "postedBy",
