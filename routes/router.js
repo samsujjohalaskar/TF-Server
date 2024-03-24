@@ -367,9 +367,12 @@ router.get("/restaurants-slider", async (req, res) => {
     const { city } = req.query;
     const restaurants = await Restaurant.find({ city: city })
       .limit(15)
-      .select(
-        "_id name city area location averageCostForTwo cuisine startTime endTime contactNumber website extraDiscount types offers amenities images menu"
-      );
+      .select("-owner")
+      .populate({
+        path: "reviews._id",
+        model: Review,
+        select: "rating comment",
+      });
 
     res.json({ restaurants });
   } catch (error) {
