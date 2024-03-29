@@ -409,7 +409,11 @@ router.get("/restaurants", async (req, res) => {
       query.amenities = amenities;
     }
 
-    const restaurants = await Restaurant.find(query).select("-owner");
+    const restaurants = await Restaurant.find(query).select("-owner").populate({
+      path: "reviews._id",
+      model: Review,
+      select: "rating comment",
+    });
     res.status(200).json({ restaurants });
   } catch (error) {
     console.error("Error fetching restaurants:", error);
