@@ -369,8 +369,7 @@ router.get("/restaurants-slider", async (req, res) => {
       .limit(15)
       .select("-owner")
       .populate({
-        path: "reviews._id",
-        model: Review,
+        path: "reviews",
         select: "rating comment",
       });
 
@@ -410,9 +409,7 @@ router.get("/restaurants", async (req, res) => {
     }
 
     const restaurants = await Restaurant.find(query).select("-owner").populate({
-      path: "reviews._id",
-      model: Review,
-      select: "rating comment",
+      path: "reviews",
     });
     res.status(200).json({ restaurants });
   } catch (error) {
@@ -436,7 +433,16 @@ router.get("/restaurants-names", async (req, res) => {
 router.get("/:city/:area/:name/:_id", async (req, res) => {
   const { city, area, name, _id } = req.params;
   try {
-    const restaurant = await Restaurant.findById(_id).select("-owner");
+    const restaurant = await Restaurant.findById(_id)
+      .select("-owner")
+      .populate({
+        path: "reviews",
+        populate: {
+          path: "reviewedBy",
+          model: "User",
+          select: "fullName image",
+        },
+      });
 
     if (!restaurant) {
       return res.status(404).json({ error: "Restaurant not found" });
@@ -453,9 +459,8 @@ router.post("/book", async (req, res) => {
   try {
     const {
       userEmail,
+      userId,
       restaurantId,
-      restaurantName,
-      fullName,
       phoneNumber,
       numberOfPeople,
       bookingDate,
@@ -463,20 +468,18 @@ router.post("/book", async (req, res) => {
       specialRequest,
     } = req.body;
 
-    if (!userEmail || !phoneNumber) {
+    if (!userId || !phoneNumber) {
       res.status(402).json({ error: "Marked Fields Are Mandatory" });
       return;
     }
 
     const existingBooking = await Booking.findOne({
-      userEmail,
+      bookedBy: userId,
       restaurant: restaurantId,
       bookingDate,
     });
 
     if (existingBooking) {
-      existingBooking.fullName = req.body.fullName;
-      existingBooking.phoneNumber = req.body.phoneNumber;
       existingBooking.numberOfPeople = req.body.numberOfPeople;
       existingBooking.entryTime = req.body.entryTime;
       existingBooking.specialRequest = req.body.specialRequest;
@@ -488,11 +491,8 @@ router.post("/book", async (req, res) => {
     }
 
     const newBooking = new Booking({
-      userEmail,
+      bookedBy: userId,
       restaurant: restaurantId,
-      restaurantName,
-      fullName,
-      phoneNumber,
       numberOfPeople,
       bookingDate,
       entryTime,
@@ -522,6 +522,10 @@ router.post("/book", async (req, res) => {
     const updatedUser = await User.findOne({ userEmail });
     updatedUser.bookings.push(newBooking._id);
     await updatedUser.save();
+
+    const bookingRestaurant = await Restaurant.findOne({ _id: restaurantId });
+    bookingRestaurant.bookings.push(newBooking._id);
+    await bookingRestaurant.save();
 
     res.status(200).json({ message: "Booking successful!" });
   } catch (error) {
@@ -609,8 +613,8 @@ router.patch("/reservations/:bookingId", async (req, res) => {
 router.post("/add-review", async (req, res) => {
   try {
     const {
+      userId,
       userEmail,
-      fullName,
       rating,
       comment,
       liked,
@@ -633,14 +637,13 @@ router.post("/add-review", async (req, res) => {
     }
 
     const existingReview = await Review.findOne({
-      userEmail,
+      reviewedBy: userId,
       restaurant: restaurantId,
     });
 
     if (existingReview) {
       // If a review exists, update it
       existingReview.rating = rating;
-      existingReview.fullName = fullName;
       existingReview.comment = comment;
       existingReview.liked = liked;
       existingReview.disLiked = disLiked;
@@ -650,8 +653,7 @@ router.post("/add-review", async (req, res) => {
     } else {
       // If no review exists, create a new one
       const newReview = new Review({
-        userEmail,
-        fullName,
+        reviewedBy: userId,
         restaurant: restaurantId,
         rating,
         comment,
@@ -670,6 +672,7 @@ router.post("/add-review", async (req, res) => {
       // Add the review to the restaurant's reviews array
       restaurant.reviews.push(newReview);
       await restaurant.save();
+
       res.status(201).json({ message: "Review submitted successfully" });
     }
   } catch (error) {
@@ -735,7 +738,23 @@ router.get("/user-info", async (req, res) => {
     }
 
     // Fetch user details based on userEmail
-    const user = await User.findOne({ userEmail: userEmail });
+    const user = await User.findOne({ userEmail: userEmail })
+      .populate({
+        path: "reviews",
+        populate: {
+          path: "restaurant",
+          model: "Restaurant",
+          select: "name city area",
+        },
+      })
+      .populate({
+        path: "bookings",
+        populate: {
+          path: "restaurant",
+          model: "Restaurant",
+          select: "name city area",
+        },
+      });
 
     res.status(200).json(user);
   } catch (error) {

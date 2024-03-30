@@ -110,7 +110,14 @@ const restaurantSchema = new mongoose.Schema({
   },
   reviews: [
     {
-      _id: { type: mongoose.Schema.Types.ObjectId, ref: "Review" },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Review",
+    },
+  ],
+  bookings: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Booking",
     },
   ],
 });

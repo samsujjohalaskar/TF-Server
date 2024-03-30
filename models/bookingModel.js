@@ -3,23 +3,15 @@ const mongoose = require("mongoose");
 const ISTOffset = 330 * 60000;
 
 const bookingSchema = new mongoose.Schema({
-  userEmail: {
-    type: String,
-    lowercase: true,
+  bookedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
   },
   restaurant: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Restaurant",
     required: true,
-  },
-  restaurantName:{
-    type: String,
-  },
-  fullName: {
-    type: String,
-  },
-  phoneNumber: {
-    type: String,
   },
   numberOfPeople: {
     type: Number,

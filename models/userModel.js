@@ -19,12 +19,14 @@ const userSchema = new mongoose.Schema({
   },
   bookings: [
     {
-      _id: { type: mongoose.Schema.Types.ObjectId, ref: "Booking" },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Booking",
     },
   ],
   reviews: [
     {
-      _id: { type: mongoose.Schema.Types.ObjectId, ref: "Review" },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Review",
     },
   ],
   blogs: [
