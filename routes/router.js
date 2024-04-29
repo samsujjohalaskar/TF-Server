@@ -16,6 +16,7 @@ const Owner = require("../models/restaurantOwnerModel");
 const Blog = require("../models/blogModel");
 const Comment = require("../models/commentModel");
 const Like = require("../models/likeModel");
+const BookedSlot = require("../models/slotModel");
 
 const storage = multer.memoryStorage();
 const upload = multer({
@@ -459,6 +460,7 @@ router.post("/book", async (req, res) => {
   try {
     const {
       userEmail,
+      fullName,
       userId,
       restaurantId,
       phoneNumber,
@@ -487,6 +489,27 @@ router.post("/book", async (req, res) => {
 
       await existingBooking.save();
 
+      // Update the time slot directly in the bookedSlot schema
+      const updatedSlot = await BookedSlot.findOneAndUpdate(
+        {
+          restaurant: restaurantId,
+          bookingDate,
+          "slots.bookingId": existingBooking._id,
+        },
+        { $set: { "slots.$.time": entryTime } },
+        { new: true }
+      );
+
+      if (!updatedSlot) {
+        // If the slot doesn't exist, create a new one
+        const newSlot = new BookedSlot({
+          restaurant: restaurantId,
+          bookingDate,
+          slots: [{ time: entryTime, bookingId: existingBooking._id }],
+        });
+        await newSlot.save();
+      }
+
       return res.status(201).json({ message: "Booking updated successfully!" });
     }
 
@@ -500,6 +523,31 @@ router.post("/book", async (req, res) => {
     });
 
     await newBooking.save();
+
+    // Find or create a BookedSlot document for the given date and restaurant
+    let bookedSlot = await BookedSlot.findOne({
+      restaurant: restaurantId,
+      bookingDate,
+    });
+
+    if (!bookedSlot) {
+      bookedSlot = new BookedSlot({
+        restaurant: restaurantId,
+        bookingDate,
+        slots: [{ time: entryTime, bookingId: newBooking._id }],
+      });
+    } else {
+      const existingSlot = bookedSlot.slots.find(
+        (slot) => slot.time === entryTime
+      );
+      if (existingSlot) {
+        existingSlot.bookingId = newBooking._id;
+      } else {
+        bookedSlot.slots.push({ time: entryTime, bookingId: newBooking._id });
+      }
+    }
+
+    await bookedSlot.save();
 
     const existingUser = await User.findOne({ userEmail });
 
@@ -530,6 +578,30 @@ router.post("/book", async (req, res) => {
     res.status(200).json({ message: "Booking successful!" });
   } catch (error) {
     console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+router.get("/bookedSlots/:restaurantId/:bookingDate", async (req, res) => {
+  try {
+    const { restaurantId, bookingDate } = req.params;
+
+    // Find the booked slots for the given restaurant and booking date
+    const bookedSlots = await BookedSlot.findOne({
+      restaurant: restaurantId,
+      bookingDate: bookingDate,
+    });
+
+    if (!bookedSlots) {
+      return res.status(201).json({
+        message: "No booked slots found for this date and restaurant.",
+      });
+    }
+
+    const timeSlots = bookedSlots.slots.map((slot) => slot.time);
+
+    res.status(200).json(timeSlots);
+  } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
