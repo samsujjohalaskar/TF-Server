@@ -826,6 +826,45 @@ router.get("/user-info", async (req, res) => {
           model: "Restaurant",
           select: "name city area",
         },
+      })
+      .populate({
+        path: "blogs",
+      })
+      .populate({
+        path: "likes",
+        populate: [
+          {
+            path: "blog",
+            model: "Blog",
+            select: "title category postedBy",
+          },
+          {
+            path: "blog",
+            populate: {
+              path: "postedBy",
+              model: "User",
+              select: "fullName",
+            },
+          },
+        ],
+      })
+      .populate({
+        path: "comments",
+        populate: [
+          {
+            path: "blog",
+            model: "Blog",
+            select: "title category postedBy",
+          },
+          {
+            path: "blog",
+            populate: {
+              path: "postedBy",
+              model: "User",
+              select: "fullName",
+            },
+          },
+        ],
       });
 
     res.status(200).json(user);
