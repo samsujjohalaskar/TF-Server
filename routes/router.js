@@ -1087,12 +1087,15 @@ router.post("/post-comment", async (req, res) => {
     const existingComment = await Comment.findOne({
       blog: blogID,
       commentedBy: userID,
+    }).populate({
+      path: "commentedBy",
+      select: "fullName image",
     });
 
     if (existingComment) {
       existingComment.comment = comment;
       await existingComment.save();
-      res.status(200).json({ message: "Comment updated successfully" });
+      res.status(200).json({ comment: existingComment });
     } else {
       const newComment = new Comment({
         comment,
@@ -1101,12 +1104,17 @@ router.post("/post-comment", async (req, res) => {
       });
       await newComment.save();
 
+      await User.populate(newComment, {
+        path: "commentedBy",
+        select: "fullName image",
+      });
+
       user.comments.push(newComment);
       await user.save();
 
       blog.comments.push(newComment);
       await blog.save();
-      res.status(201).json({ message: "Comment posted successfully" });
+      res.status(201).json({ comment: newComment });
     }
   } catch (error) {
     console.error("Error posting/commenting:", error);
