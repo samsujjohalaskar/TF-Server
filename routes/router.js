@@ -651,7 +651,13 @@ router.get("/reservations", async (req, res) => {
       return res.status(400).json({ error: "User not Found." });
     }
 
-    const reservations = await Booking.find({ restaurant: restaurant });
+    const reservations = await Booking.find({
+      restaurant: restaurant,
+    }).populate({
+      path: "bookedBy",
+      model: "User",
+      select: "userEmail fullName phoneNumber",
+    });
 
     res.status(200).json(reservations);
   } catch (error) {
