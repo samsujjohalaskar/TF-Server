@@ -924,18 +924,21 @@ router.post("/upload-image", upload.single("image"), async (req, res) => {
 
 router.post("/post-blog", upload.single("image"), async (req, res) => {
   try {
-    const { title, content, category, postedBy } = req.body;
+    const { title, content, mainContent, category, postedBy } = req.body;
     const user = await User.findOne({ _id: postedBy });
 
     const newBlog = new Blog({
       title,
       content,
+      mainContent: JSON.parse(mainContent),
       category,
       postedBy,
     });
 
-    newBlog.image.data = req.file.buffer;
-    newBlog.image.contentType = req.file.mimetype;
+    if (req.file) {
+      newBlog.image.data = req.file.buffer;
+      newBlog.image.contentType = req.file.mimetype;
+    }
 
     await newBlog.save();
 
