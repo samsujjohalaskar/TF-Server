@@ -637,6 +637,21 @@ router.delete("/bookings/:bookingId", async (req, res) => {
       return res.status(404).json({ error: "Booking not found" });
     }
 
+    // finds the booked slot document for the restaurant and booking date
+    const bookedSlot = await BookedSlot.findOne({
+      restaurant: updatedBooking.restaurant,
+      bookingDate: updatedBooking.bookingDate,
+    });
+
+    if (bookedSlot) {
+      // removes the slot with the given bookingId
+      bookedSlot.slots = bookedSlot.slots.filter(
+        (slot) => !slot.bookingId.equals(bookingId)
+      );
+
+      await bookedSlot.save();
+    }
+
     res.status(200).json(updatedBooking);
   } catch (error) {
     console.error("Error cancelling booking:", error);
