@@ -63,27 +63,26 @@ restaurantOwnerSchema.pre("save", async function (next) {
   next();
 });
 
-// restaurantOwnerSchema.methods.generateAuthToken = async function (){
-
-//     try {
-//         let newToken = jwt.sign({_id:this._id},process.env.SECRET_KEY);
-//         this.tokens = this.tokens.concat({token: newToken});
-//         await this.save();
-//         return newToken;
-//     } catch (error) {
-//         console.log(error);
-//     }
-// }
 restaurantOwnerSchema.methods.generateAuthToken = async function () {
   try {
-    const newToken = jwt.sign({ _id: this._id }, process.env.SECRET_KEY);
-    this.tokens = [{ token: newToken }];
+    let newToken = jwt.sign({ _id: this._id }, process.env.SECRET_KEY);
+    this.tokens = this.tokens.concat({ token: newToken });
     await this.save();
-
     return newToken;
   } catch (error) {
     console.log(error);
   }
 };
+// restaurantOwnerSchema.methods.generateAuthToken = async function () {
+//   try {
+//     const newToken = jwt.sign({ _id: this._id }, process.env.SECRET_KEY);
+//     this.tokens = [{ token: newToken }];
+//     await this.save();
+
+//     return newToken;
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
 
 module.exports = mongoose.model("RestaurantOwner", restaurantOwnerSchema);
